@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: Copyright contributors to the LM-Service project
+
 import time
 from dataclasses import dataclass
 from enum import Enum
@@ -111,7 +114,6 @@ def _to_slot(metric: float, excel: float, pass_: float) -> int:
 
 
 class _SwitchAdviser:
-
     class _Action(Enum):
         NO_ACTION = 0
         P2D = 1
@@ -124,11 +126,20 @@ class _SwitchAdviser:
         self._last_action = self._Action.NO_ACTION
 
     def advise(self, state: _State) -> SwitchAdvice | None:
-        if state.ttft_slot <= _SLO_GOOD_SLOT and state.tpot_slot <= _SLO_GOOD_SLOT:
+        if (
+            state.ttft_slot <= _SLO_GOOD_SLOT
+            and state.tpot_slot <= _SLO_GOOD_SLOT
+        ):
             action = self._decide_excel_or_good_slo(state)
-        elif state.ttft_slot == _SLO_EXCEL_SLOT and state.tpot_slot == _SLO_BAD_SLOT:
+        elif (
+            state.ttft_slot == _SLO_EXCEL_SLOT
+            and state.tpot_slot == _SLO_BAD_SLOT
+        ):
             action = self._decide_excel_ttft_bad_tpot(state)
-        elif state.ttft_slot == _SLO_BAD_SLOT and state.tpot_slot == _SLO_EXCEL_SLOT:
+        elif (
+            state.ttft_slot == _SLO_BAD_SLOT
+            and state.tpot_slot == _SLO_EXCEL_SLOT
+        ):
             action = self._decide_bad_ttft_excel_tpot(state)
         else:
             action = self._decide_queue_len_guided(state)
@@ -157,7 +168,11 @@ class _SwitchAdviser:
     def _find_best_switchable(state, is_to_prefill):
         best = -1
         min_length = -1
-        switchables = state.switchable_decodes if is_to_prefill else state.switchable_prefills
+        switchables = (
+            state.switchable_decodes
+            if is_to_prefill
+            else state.switchable_prefills
+        )
         for endpoint_i in switchables:
             length = state.endpoints[endpoint_i].queue_length
             if best == -1 or length < min_length:
@@ -168,8 +183,12 @@ class _SwitchAdviser:
         return best
 
     def _decide_excel_or_good_slo(self, state):
-        mid_tpot = _slo_mid_point(self._slo_config.auto_excel_tpot, self._slo_config.pass_tpot)
-        mid_ttft = _slo_mid_point(self._slo_config.auto_excel_ttft, self._slo_config.pass_ttft)
+        mid_tpot = _slo_mid_point(
+            self._slo_config.auto_excel_tpot, self._slo_config.pass_tpot
+        )
+        mid_ttft = _slo_mid_point(
+            self._slo_config.auto_excel_ttft, self._slo_config.pass_ttft
+        )
         if self._last_action == self._Action.KEEP_D2P_BY_BAD_TTFT:
             if state.tpot_quantile < mid_tpot \
                     and state.ttft_quantile > mid_ttft:
@@ -240,17 +259,25 @@ class _SwitchAdviser:
 
 
 class _ElasticAdviser:
-
     @staticmethod
     def advise(state: _State) -> ElasticAdvice | None:
         has_advice = False
-        advice = ElasticAdvice(new_total_prefills=state.num_prefills,
-                               new_total_decodes=state.num_decodes)
+        advice = ElasticAdvice(
+            new_total_prefills=state.num_prefills,
+            new_total_decodes=state.num_decodes
+        )
         if state.ttft_slot == _SLO_EXCEL_SLOT:
             if state.num_droppable_p > 0:
                 # TODO find out how many instances to be dropped
-                advice.drop_prefills = \
-                    [np.argmin([e.queue_length for e in state.endpoints if e.is_prefill]).tolist()]
+                advice.drop_prefills = [
+                    np.argmin(
+                        [
+                            e.queue_length
+                            for e in state.endpoints
+                            if e.is_prefill
+                        ]
+                    ).tolist()]
+
                 advice.new_total_prefills -= 1
                 has_advice = True
         elif state.ttft_slot == _SLO_BAD_SLOT:
@@ -260,8 +287,15 @@ class _ElasticAdviser:
         if state.tpot_slot == _SLO_EXCEL_SLOT:
             if state.num_droppable_d > 0:
                 # TODO find out how many instances to be dropped
-                advice.drop_decodes = \
-                    [np.argmin([e.queue_length for e in state.endpoints if not e.is_prefill]).tolist()]
+                advice.drop_decodes = [
+                    np.argmin(
+                        [
+                            e.queue_length
+                            for e in state.endpoints
+                            if not e.is_prefill
+                        ]
+                    ).tolist()
+                ]
                 advice.new_total_decodes -= 1
                 has_advice = True
         elif state.tpot_slot == _SLO_BAD_SLOT:
@@ -272,7 +306,6 @@ class _ElasticAdviser:
 
 
 class _CircularList:
-
     def __init__(self, max_len, dtype=np.float32):
         self.ary = np.empty(max_len, dtype=dtype)
         self.max_len = max_len
@@ -295,7 +328,6 @@ class _CircularList:
 
 
 class DynamicPd:
-
     def __init__(self, slo_config: SloConfig, stats_config: StatsConfig):
         self._slo_config = slo_config
         self._stats_config = stats_config
@@ -305,19 +337,27 @@ class DynamicPd:
         self._switch_adviser = _SwitchAdviser(slo_config)
         self._elastic_adviser = _ElasticAdviser()
 
-    def on_request_finished(self, ttft: float, tpot: float, finish_time: float = -1):
+    def on_request_finished(
+            self, ttft: float, tpot: float, finish_time: float = -1
+    ):
         if ttft > 0 and tpot > 0:
             self._ttft_hist.append(ttft)
             self._tpot_hist.append(tpot)
-            self._time_hist.append(finish_time if finish_time > 0 else time.time())
+            self._time_hist.append(
+                finish_time if finish_time > 0 else time.time()
+            )
 
-    def advise_switch(self, endpoints: List[PdEndpointInfo]) -> SwitchAdvice | None:
+    def advise_switch(
+            self, endpoints: List[PdEndpointInfo]
+    ) -> SwitchAdvice | None:
         state = self._gather_state(endpoints)
         if state is None:
             return None
         return self._switch_adviser.advise(state)
 
-    def advise_elastic(self, endpoints: List[PdEndpointInfo]) -> ElasticAdvice | None:
+    def advise_elastic(
+            self, endpoints: List[PdEndpointInfo]
+    ) -> ElasticAdvice | None:
         state = self._gather_state(endpoints)
         if state is None:
             return None
@@ -336,8 +376,16 @@ class DynamicPd:
         ttft_quantile = np.quantile(ttft_wind, self._slo_config.p_quantile)
         tpot_quantile = np.quantile(tpot_wind, self._slo_config.p_quantile)
 
-        ttft_slot = _to_slot(ttft_quantile, self._slo_config.auto_excel_ttft, self._slo_config.pass_ttft)
-        tpot_slot = _to_slot(tpot_quantile, self._slo_config.auto_excel_tpot, self._slo_config.pass_tpot)
+        ttft_slot = _to_slot(
+            ttft_quantile,
+            self._slo_config.auto_excel_ttft,
+            self._slo_config.pass_ttft
+        )
+        tpot_slot = _to_slot(
+            tpot_quantile,
+            self._slo_config.auto_excel_tpot,
+            self._slo_config.pass_tpot
+        )
 
         switchable_prefills = []
         switchable_decodes = []
@@ -361,5 +409,5 @@ class DynamicPd:
             num_prefill_only=num_prefill_only,
             num_decode_only=num_decode_only,
             ttft_slot=ttft_slot,
-            tpot_slot=tpot_slot
+            tpot_slot=tpot_slot,
         )
