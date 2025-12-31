@@ -19,6 +19,7 @@ class SloConfig:
     """
     SLO Configurations.
     """
+
     # max. TTFT that is pass
     pass_ttft: float = 1.0
     # max. TPOT that is pass
@@ -46,8 +47,9 @@ class SloConfig:
 @dataclass
 class StatsConfig:
     """
-        Statistics Configurations.
+    Statistics Configurations.
     """
+
     # max. no. of TTFT/TPOT history values to be stored
     max_history: int = 1000
     # min. no. of TTFT/TPOT history values required for generating advice
@@ -59,8 +61,9 @@ class StatsConfig:
 @dataclass
 class PdEndpointInfo:
     """
-        P/D Disaggregated Endpoint Info.
+    P/D Disaggregated Endpoint Info.
     """
+
     # is it a prefill endpoint
     is_prefill: bool
     # is it switchable from P to D or D to P
@@ -72,8 +75,9 @@ class PdEndpointInfo:
 @dataclass
 class SwitchAdvice:
     """
-        Switch Advice for fixed number of P/D endpoints.
+    Switch Advice for fixed number of P/D endpoints.
     """
+
     # Indices of endpoints to be switched
     switch_endpoints: List[int]
 
@@ -81,8 +85,9 @@ class SwitchAdvice:
 @dataclass
 class ElasticAdvice:
     """
-        Elastic Advice for unlimited number of P/D endpoints.
+    Elastic Advice for unlimited number of P/D endpoints.
     """
+
     # Indices of endpoints to be dropped (as a prefill)
     drop_prefills: List[int] | None = None
     # Indices of endpoints to be dropped (as a decode)
@@ -366,8 +371,9 @@ class _CircularList:
 
 class DynamicPd:
     """
-        Dynamic P/D endpoints switching or elastic allocations.
+    Dynamic P/D endpoints switching or elastic allocations.
     """
+
     def __init__(self, slo_config: SloConfig, stats_config: StatsConfig):
         self._slo_config = slo_config
         self._stats_config = stats_config
