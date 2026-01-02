@@ -3,7 +3,12 @@
 
 import numpy as np
 
-from lm_service.dynamic_pd import DynamicPd, SloConfig, StatsConfig, PdEndpointInfo
+from lm_service.dynamic_pd import (
+    DynamicPd,
+    SloConfig,
+    StatsConfig,
+    PdEndpointInfo,
+)
 
 
 class TestDynamicPd:
@@ -55,8 +60,14 @@ class TestDynamicPd:
         assert len(elastic_advice.drop_decodes) >= 1
         assert elastic_advice.delta_prefills <= -1
         assert elastic_advice.delta_decodes <= -1
-        assert elastic_advice.new_total_prefills == num_prefills + elastic_advice.delta_prefills
-        assert elastic_advice.new_total_decodes == num_decodes + elastic_advice.delta_decodes
+        assert (
+            elastic_advice.new_total_prefills
+            == num_prefills + elastic_advice.delta_prefills
+        )
+        assert (
+                elastic_advice.new_total_decodes
+                == num_decodes + elastic_advice.delta_decodes
+        )
 
     def test_bad_ttft_good_tpot(self):
         dynamic_pd = self._create_dynamic_pd()
@@ -76,8 +87,14 @@ class TestDynamicPd:
         assert elastic_advice.drop_decodes is None
         assert elastic_advice.delta_prefills >= 1
         assert elastic_advice.delta_decodes == 0
-        assert elastic_advice.new_total_prefills == num_prefills + elastic_advice.delta_prefills
-        assert elastic_advice.new_total_decodes == num_decodes + elastic_advice.delta_decodes
+        assert (
+            elastic_advice.new_total_prefills
+            == num_prefills + elastic_advice.delta_prefills
+        )
+        assert (
+            elastic_advice.new_total_decodes
+            == num_decodes + elastic_advice.delta_decodes
+        )
 
     def test_good_ttft_bad_tpot(self):
         dynamic_pd = self._create_dynamic_pd()
@@ -97,8 +114,14 @@ class TestDynamicPd:
         assert elastic_advice.drop_decodes is None
         assert elastic_advice.delta_prefills == 0
         assert elastic_advice.delta_decodes >= 1
-        assert elastic_advice.new_total_prefills == num_prefills + elastic_advice.delta_prefills
-        assert elastic_advice.new_total_decodes == num_decodes + elastic_advice.delta_decodes
+        assert (
+            elastic_advice.new_total_prefills
+            == num_prefills + elastic_advice.delta_prefills
+        )
+        assert (
+            elastic_advice.new_total_decodes
+            == num_decodes + elastic_advice.delta_decodes
+        )
 
     def test_excel_ttft_bad_tpot(self):
         dynamic_pd = self._create_dynamic_pd()
@@ -120,8 +143,14 @@ class TestDynamicPd:
         assert elastic_advice.drop_decodes is None
         assert elastic_advice.delta_prefills <= -1
         assert elastic_advice.delta_decodes >= 1
-        assert elastic_advice.new_total_prefills == num_prefills + elastic_advice.delta_prefills
-        assert elastic_advice.new_total_decodes == num_decodes + elastic_advice.delta_decodes
+        assert (
+            elastic_advice.new_total_prefills
+            == num_prefills + elastic_advice.delta_prefills
+        )
+        assert (
+            elastic_advice.new_total_decodes
+            == num_decodes + elastic_advice.delta_decodes
+        )
 
     def test_bad_ttft_excel_tpot(self):
         dynamic_pd = self._create_dynamic_pd()
@@ -143,13 +172,18 @@ class TestDynamicPd:
         assert len(elastic_advice.drop_decodes) == 1
         assert elastic_advice.delta_prefills >= 1
         assert elastic_advice.delta_decodes <= -1
-        assert elastic_advice.new_total_prefills == num_prefills + elastic_advice.delta_prefills
-        assert elastic_advice.new_total_decodes == num_decodes + elastic_advice.delta_decodes
+        assert (
+            elastic_advice.new_total_prefills
+            == num_prefills + elastic_advice.delta_prefills
+        )
+        assert (
+            elastic_advice.new_total_decodes
+            == num_decodes + elastic_advice.delta_decodes
+        )
 
     @staticmethod
     def _create_dynamic_pd():
-        return DynamicPd(slo_config=SloConfig(),
-                         stats_config=StatsConfig())
+        return DynamicPd(slo_config=SloConfig(), stats_config=StatsConfig())
 
     @staticmethod
     def _gen_ttft_tpot(dynamic_pd, num_reqs, ttft_rng, tpot_rng):
@@ -162,8 +196,10 @@ class TestDynamicPd:
     def _create_endpoints(num_prefills, num_decodes):
         num_endpoints = num_prefills + num_decodes
         return [
-            PdEndpointInfo(is_prefill=(i < num_prefills),
-                           is_switchable=True,
-                           queue_length=10)
+            PdEndpointInfo(
+                is_prefill=(i < num_prefills),
+                is_switchable=True,
+                queue_length=10,
+            )
             for i in range(num_endpoints)
         ]
