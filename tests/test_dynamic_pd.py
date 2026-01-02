@@ -189,22 +189,22 @@ class TestDynamicPd:
             PdEndpointInfo(
                 is_prefill=True,
                 is_switchable=True,
-                queue_length=1,
+                queue_length=100,
             ),
             PdEndpointInfo(
                 is_prefill=True,
                 is_switchable=True,
+                queue_length=100,
+            ),
+            PdEndpointInfo(
+                is_prefill=False,
+                is_switchable=True,
                 queue_length=1,
             ),
             PdEndpointInfo(
                 is_prefill=False,
                 is_switchable=True,
-                queue_length=100,
-            ),
-            PdEndpointInfo(
-                is_prefill=False,
-                is_switchable=True,
-                queue_length=100,
+                queue_length=1,
             ),
         ]
 
